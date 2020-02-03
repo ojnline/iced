@@ -22,6 +22,8 @@ void main() {
     // or replaced as a constant when compiling the shader
     const float tolerance = 1.0;
 
+    // the original quad position is its bottom left corner 
+    // but the sdf uses the centre and halved scale
     float d = distance(
         gl_FragCoord.xy,
         v_Pos+v_Scale*0.5,
@@ -29,9 +31,10 @@ void main() {
         v_BorderRadius
     );
 
-    float radius_backround = smoothstep(0.5 - tolerance, 0.5 + tolerance, d+v_BorderWidth);
-    float radius_border =    smoothstep(0.5 - tolerance, 0.5 + tolerance, d);
-
-    o_Color = v_Color * (1.0 - radius_backround)
-            + v_BorderColor * (1.0 - radius_border) * radius_border;
+    float radius_backround = 1.0 - smoothstep(0.5 - tolerance, 0.5 + tolerance, d+v_BorderWidth);
+    float radius_border =    1.0 - smoothstep(0.5 - tolerance, 0.5 + tolerance, d);
+       
+    vec4 color = mix(v_Color, v_BorderColor, radius_border - radius_backround);
+       
+    o_Color = vec4(color.xyz, color.w * radius_border);
 }
